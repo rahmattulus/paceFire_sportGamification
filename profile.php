@@ -89,6 +89,14 @@ require __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <section class="bento-grid">
+    <article class="stat-card streak-ring-card">
+        <div class="streak-ring" style="--progress: <?= min(100, ((int) $displayStreak / 30) * 100) ?>%">
+            <div class="streak-ring-inner">
+                <strong><?= $displayStreak ?></strong>
+                <span>Hari</span>
+            </div>
+        </div>
+    </article>
     <article class="stat-card">
         <span class="stat-label">Total Jarak Lari</span>
         <strong class="stat-number"><?= number_format($distance['lari'], 2) ?><small> km</small></strong>

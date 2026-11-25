@@ -15,9 +15,9 @@ require __DIR__ . '/includes/header.php';
 ?>
 <section class="hero-panel">
     <div>
-        <p class="eyebrow">Gerak. Catat. Menang.</p>
-        <h1>Jadikan Setiap Kilometer Bernilai</h1>
-        <p>Berkonsistensi, kumpulkan poin, buka badge, dan tantang komunitas PaceFire.</p>
+        <p class="eyebrow">Gerak yang terasa ringan</p>
+        <h1>Mulai hari dengan langkahmu</h1>
+        <p>Catat lari atau gowes, jaga ritme, dan rayakan setiap pencapaian dengan PaceFire.</p>
         <?php if (!is_logged_in()): ?>
             <a class="btn btn-volt" href="/pacefire/register.php">Mulai Sekarang</a>
         <?php else: ?>

@@ -36,20 +36,20 @@
     const gridSteps = 4;
 
     context.clearRect(0, 0, width, height);
-    context.font = '12px Inter, sans-serif';
+    context.font = '12px Nunito, Apercu, sans-serif';
     context.textAlign = 'right';
     context.textBaseline = 'middle';
 
     for (let step = 0; step <= gridSteps; step++) {
       const y = padding.top + (chartHeight / gridSteps) * step;
       const value = Math.round(maxPoints - (maxPoints / gridSteps) * step);
-      context.strokeStyle = '#333333';
+      context.strokeStyle = '#E8DFC9';
       context.lineWidth = 1;
       context.beginPath();
       context.moveTo(padding.left, y);
       context.lineTo(width - padding.right, y);
       context.stroke();
-      context.fillStyle = '#8E8E8E';
+      context.fillStyle = '#8E7DA5';
       context.fillText(String(value), padding.left - 8, y);
     }
 
@@ -64,11 +64,11 @@
       const isToday = index === data.length - 1;
       const isHighest = item.points === Math.max(...data.map((entry) => entry.points));
 
-      context.fillStyle = isToday || isHighest ? '#CCFF00' : '#2B2B2B';
+      context.fillStyle = isToday || isHighest ? '#FF6B35' : '#B4C68F';
       roundedBar(context, x, y, barWidth, barHeight, 6);
       context.fill();
 
-      context.fillStyle = '#B3B3B3';
+      context.fillStyle = '#594675';
       context.textAlign = 'center';
       context.textBaseline = 'top';
       context.fillText(item.label, x + barWidth / 2, height - padding.bottom + 12);

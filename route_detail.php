@@ -51,9 +51,9 @@ require __DIR__ . '/includes/header.php';
     <article class="panel-card route-visual">
         <div class="route-schematic" aria-label="Ilustrasi rute">
             <svg viewBox="0 0 600 260" role="img">
-                <path d="M40 220 C120 40, 220 220, 300 120 S480 40, 560 180" fill="none" stroke="#CCFF00" stroke-width="10" stroke-linecap="round"/>
-                <circle cx="40" cy="220" r="12" fill="#FFFFFF"/>
-                <circle cx="560" cy="180" r="12" fill="#FA5400"/>
+                <path d="M40 220 C120 40, 220 220, 300 120 S480 40, 560 180" fill="none" stroke="#FF6B35" stroke-width="10" stroke-linecap="round"/>
+                <circle cx="40" cy="220" r="12" fill="#7E9F4B"/>
+                <circle cx="560" cy="180" r="12" fill="#F4877E"/>
             </svg>
         </div>
         <h2>Leaderboard Tercepat</h2>

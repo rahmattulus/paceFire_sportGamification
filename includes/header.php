@@ -18,7 +18,13 @@ $flash = get_flash();
 <body>
 <header class="topbar">
     <a class="brand" href="/pacefire/index.php" aria-label="PaceFire beranda">
-        PACE<span>FIRE</span>
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="21" fill="#FFD25C"/>
+            <path d="M17 33c-5-5-5-12 0-17 5-5 12-5 17 0-7 1-11 5-12 10-1 4 0 8 3 11-4 0-7-1-8-4Z" fill="#FF6B35"/>
+            <path d="M27 15c-2 5-2 10 2 14 3 3 7 4 10 2-2-6-6-12-12-16Z" fill="#F4877E" opacity=".88"/>
+            <circle cx="18" cy="18" r="3" fill="#FFF7E7"/>
+        </svg>
+        <span class="brand-wordmark">Pace<span>Fire</span></span>
     </a>
     <nav class="main-nav" aria-label="Navigasi utama">
         <?php if (is_logged_in()): ?>

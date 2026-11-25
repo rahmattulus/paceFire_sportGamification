@@ -32,6 +32,7 @@ $flash = get_flash();
                 <a href="/pacefire/activity_create.php">Catat</a>
                 <a href="/pacefire/activity_history.php">Riwayat</a>
                 <a href="/pacefire/routes.php">Jalur</a>
+                <a href="/pacefire/challenges.php">Challenge</a>
                 <a href="/pacefire/leaderboard.php">Leaderboard</a>
                 <a href="/pacefire/profile.php">Profil</a>
             <?php endif; ?>

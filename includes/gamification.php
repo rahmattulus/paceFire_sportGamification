@@ -198,3 +198,144 @@ function evaluate_badges(PDO $pdo, int $userId): array
 
     return $newBadges;
 }
+
+function challenge_participant_score(PDO $pdo, int $challengeId, int $participantId): float
+{
+    $challenge = $pdo->prepare(
+        'SELECT tipe_target, jenis_olahraga, tanggal_mulai, tanggal_selesai
+         FROM challenges
+         WHERE id = ?'
+    );
+    $challenge->execute([$challengeId]);
+    $data = $challenge->fetch();
+    if (!$data) {
+        return 0.0;
+    }
+
+    $participant = $pdo->prepare(
+        'SELECT joined_at
+         FROM challenge_participants
+         WHERE challenge_id = ? AND user_id = ?'
+    );
+    $participant->execute([$challengeId, $participantId]);
+    $participantData = $participant->fetch();
+    if (!$participantData) {
+        return 0.0;
+    }
+
+    $startDate = max(
+        $data['tanggal_mulai'],
+        date('Y-m-d', strtotime($participantData['joined_at']))
+    );
+    $sportFilter = $data['jenis_olahraga'] === 'semua'
+        ? ''
+        : ' AND jenis_olahraga = ' . $pdo->quote($data['jenis_olahraga']);
+    $valueColumn = $data['tipe_target'] === 'jarak'
+        ? 'COALESCE(SUM(jarak_km), 0)'
+        : 'COALESCE(SUM(poin_total), 0)';
+
+    $statement = $pdo->prepare(
+        'SELECT ' . $valueColumn . '
+         FROM activities
+         WHERE user_id = ?
+           AND tanggal >= ?
+           AND tanggal <= ?'
+        . $sportFilter
+    );
+    $statement->execute([$participantId, $startDate, $data['tanggal_selesai']]);
+
+    return (float) $statement->fetchColumn();
+}
+
+function finalize_challenge(PDO $pdo, int $challengeId): void
+{
+    $challenge = $pdo->prepare(
+        'SELECT * FROM challenges WHERE id = ?'
+    );
+    $challenge->execute([$challengeId]);
+    $challengeData = $challenge->fetch();
+    if (!$challengeData || $challengeData['status'] !== 'aktif') {
+        return;
+    }
+
+    $participants = $pdo->prepare(
+        'SELECT user_id FROM challenge_participants WHERE challenge_id = ?'
+    );
+    $participants->execute([$challengeId]);
+    $participantRows = $participants->fetchAll();
+
+    $ranked = [];
+    foreach ($participantRows as $participant) {
+        $ranked[] = [
+            'user_id' => (int) $participant['user_id'],
+            'score' => challenge_participant_score($pdo, $challengeId, (int) $participant['user_id']),
+        ];
+    }
+
+    usort($ranked, static function (array $a, array $b): int {
+        $scoreComparison = $b['score'] <=> $a['score'];
+        return $scoreComparison !== 0 ? $scoreComparison : $a['user_id'] <=> $b['user_id'];
+    });
+
+    $pdo->prepare(
+        'UPDATE challenges SET status = ? WHERE id = ?'
+    )->execute(['selesai', $challengeId]);
+
+    foreach ($ranked as $index => $participant) {
+        $rank = $index + 1;
+        $bonus = $rank === 1 ? (int) $challengeData['bonus_poin_pemenang'] : 0;
+
+        $pdo->prepare(
+            'UPDATE challenge_participants
+             SET peringkat_akhir = ?, bonus_poin_didapat = ?
+             WHERE challenge_id = ? AND user_id = ?'
+        )->execute([$rank, $bonus, $challengeId, $participant['user_id']]);
+
+        if ($bonus > 0) {
+            $pdo->prepare(
+                'UPDATE users SET total_poin = total_poin + ? WHERE id = ?'
+            )->execute([$bonus, $participant['user_id']]);
+        }
+    }
+}
+
+function evaluate_user_challenges(PDO $pdo, int $userId): array
+{
+    $closed = [];
+    $statement = $pdo->prepare(
+        'SELECT c.id, c.nilai_target
+         FROM challenges c
+         JOIN challenge_participants cp ON cp.challenge_id = c.id
+         WHERE cp.user_id = ?
+           AND c.status = \'aktif\'
+           AND c.tipe_target = \'jarak\''
+    );
+    $statement->execute([$userId]);
+    $challenges = $statement->fetchAll();
+
+    foreach ($challenges as $challenge) {
+        $score = challenge_participant_score($pdo, (int) $challenge['id'], $userId);
+        if ($score >= (float) $challenge['nilai_target']) {
+            finalize_challenge($pdo, (int) $challenge['id']);
+            $closed[] = (int) $challenge['id'];
+        }
+    }
+
+    return $closed;
+}
+
+function sync_expired_challenges(PDO $pdo): void
+{
+    $statement = $pdo->prepare(
+        'SELECT id
+         FROM challenges
+         WHERE status = \'aktif\'
+           AND tanggal_selesai < CURDATE()'
+    );
+    $statement->execute();
+    $expired = $statement->fetchAll();
+
+    foreach ($expired as $challenge) {
+        finalize_challenge($pdo, (int) $challenge['id']);
+    }
+}

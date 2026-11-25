@@ -52,6 +52,7 @@ require __DIR__ . '/includes/header.php';
         <p>Catat lari atau bersepeda untuk mengumpulkan poin dan membuka badge.</p>
         <a class="btn btn-volt" href="/pacefire/activity_create.php">Catat Aktivitas</a>
         <a class="btn btn-secondary" href="/pacefire/routes.php">Jelajahi Jalur</a>
+        <a class="btn btn-secondary" href="/pacefire/challenges.php">Lihat Challenge</a>
     </article>
 </section>
 <?php require __DIR__ . '/includes/footer.php'; ?>

@@ -54,14 +54,14 @@ Dokumen ini merupakan panduan langkah demi langkah (*step-by-step*) untuk memban
 **Target:** User dapat membuat/mengikuti *challenge*, progres terhitung otomatis sejak `joined_at`, dan penutupan otomatis berjalan untuk target jarak maupun batas waktu.
 
 ### Checklist Pengerjaan:
-- [ ] **3.1 Logika Evaluasi Challenge (`includes/gamification.php`):**
+- [x] **3.1 Logika Evaluasi Challenge (`includes/gamification.php`):**
   - Fungsi `evaluate_user_challenges($user_id)`: Dipanggil di dalam transaksi saat user menyimpan aktivitas baru. Mengecek seluruh *challenge* aktif bertipe `jarak` yang diikuti user; jika akumulasi jarak $\ge$ `nilai_target`, langsung tutup *challenge* (`status = 'selesai'`), hitung peringkat akhir seluruh peserta, dan berikan `bonus_poin_pemenang` ke Peringkat 1.
   - Fungsi `sync_expired_challenges()`: Dipanggil saat halaman daftar/detail *challenge* dimuat untuk menutup *challenge* yang telah melewati `tanggal_selesai` dan menetapkan pemenangnya.
-- [ ] **3.2 Halaman Challenge (`challenges.php`, `challenge_create.php`, `challenge_detail.php`):**
+- [x] **3.2 Halaman Challenge (`challenges.php`, `challenge_create.php`, `challenge_detail.php`):**
   - `challenge_create.php`: Form pembuatan *challenge* (judul, jenis olahraga, tipe target jarak/poin, nilai target, tingkat kesulitan `easy/medium/hard` yang otomatis menentukan bonus juara, serta tanggal mulai & selesai) + otomatis mendaftarkan pembuat ke `challenge_participants`.
   - `challenges.php`: Navigasi tab (**Tersedia**, **Diikuti**, **Selesai**) dengan progress bar CSS murni.
   - `challenge_detail.php`: Informasi aturan, tombol "Gabung Challenge", progres pribadi, dan *Leaderboard* peserta (dihitung dari `MAX(tanggal_mulai, DATE(joined_at))`).
-- [ ] **3.3 Leaderboard Global (`leaderboard.php`):**
+- [x] **3.3 Leaderboard Global (`leaderboard.php`):**
   - Peringkat seluruh pengguna berdasarkan `total_poin` tertinggi, menampilkan lencana peringkat 1–3, streak terpanjang, dan jumlah badge.
 
 **Kriteria Selesai:** Dua akun berbeda dapat bergabung ke *challenge* yang sama; aktivitas yang dicatat sebelum `joined_at` tidak dihitung; saat salah satu user mencapai target jarak, status *challenge* otomatis berubah menjadi `selesai` dan bonus poin masuk ke pemenang.

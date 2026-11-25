@@ -137,6 +137,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 $newBadges = evaluate_badges($pdo, $_SESSION['user_id']);
+                $closedChallenges = evaluate_user_challenges($pdo, $_SESSION['user_id']);
+
+                $challengeMessage = '';
+                if ($closedChallenges) {
+                    $challengeNames = [];
+                    foreach ($closedChallenges as $challengeId) {
+                        $challengeName = $pdo->prepare('SELECT judul FROM challenges WHERE id = ?');
+                        $challengeName->execute([$challengeId]);
+                        $title = $challengeName->fetchColumn();
+                        $challengeNames[] = $title;
+                    }
+                    $challengeMessage = ' Memenangkan challenge: ' . implode(', ', $challengeNames) . '.';
+                }
 
                 $pdo->commit();
 
@@ -150,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 set_flash(
                     'success',
-                    '+' . $points['poin_total'] . ' poin. Streak: ' . $streak['current_streak'] . ' hari.' . $badgeMessage
+                    '+' . $points['poin_total'] . ' poin. Streak: ' . $streak['current_streak'] . ' hari.' . $badgeMessage . $challengeMessage
                 );
                 redirect('/pacefire/dashboard.php');
             } catch (Throwable $exception) {

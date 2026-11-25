@@ -26,6 +26,24 @@ require __DIR__ . '/includes/header.php';
     </div>
 </section>
 
+<section class="feature-grid" aria-label="Fitur PaceFire">
+    <article class="panel-card">
+        <p class="eyebrow">Catat</p>
+        <h2>Aktivitas Nyata</h2>
+        <p>Catat lari dan bersepeda dengan validasi jarak serta pace yang wajar.</p>
+    </article>
+    <article class="panel-card">
+        <p class="eyebrow">Konsisten</p>
+        <h2>Api Streak</h2>
+        <p>Bergerak setiap hari untuk menjaga streak dan membuka bonus tambahan.</p>
+    </article>
+    <article class="panel-card">
+        <p class="eyebrow">Bersaing</p>
+        <h2>Challenge & Badge</h2>
+        <p>Ikuti challenge komunitas dan kumpulkan lencana pencapaian seumur hidup.</p>
+    </article>
+</section>
+
 <section>
     <h2 class="section-title">Top 5 Leaderboard</h2>
     <div class="leaderboard-card">

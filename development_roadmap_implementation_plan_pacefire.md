@@ -72,13 +72,13 @@ Dokumen ini merupakan panduan langkah demi langkah (*step-by-step*) untuk memban
 **Target:** Antarmuka utama kaya akan umpan balik visual tanpa menggunakan *library* grafik eksternal.
 
 ### Checklist Pengerjaan:
-- [ ] **4.1 Grafik Mingguan Vanilla JS (`assets/js/dashboard_chart.js`):**
+- [x] **4.1 Grafik Mingguan Vanilla JS (`assets/js/dashboard_chart.js`):**
   - Siapkan data agregasi jarak/poin 7 hari terakhir dari PHP dalam format JSON ke atribut data HTML / variabel JS.
   - Gambar grafik batang (*bar chart*) responsif menggunakan HTML5 `<canvas>` 2D context lengkap dengan label hari, nilai poin/jarak, dan *hover tooltip* sederhana.
-- [ ] **4.2 Dashboard Pengguna (`dashboard.php`):**
+- [x] **4.2 Dashboard Pengguna (`dashboard.php`):**
   - Kartu metrik utama: Total Poin, Status Api Streak (menyala jika `last_active_date` hari ini/kemarin, padam/0 jika terlewat), dan Peringkat Global saat ini.
   - Integrasi grafik `<canvas>`, daftar *challenge* aktif yang diikuti, dan 3 *badge* terbaru.
-- [ ] **4.3 Halaman Profil (`profile.php`) & Beranda (`index.php`):**
+- [x] **4.3 Halaman Profil (`profile.php`) & Beranda (`index.php`):**
   - `profile.php`: Ringkasan total jarak lari & sepeda, rekor `longest_streak`, grid etalase semua *badge* (visual berbeda antara yang sudah terbuka dan masih terkunci), serta form ganti password.
   - `index.php`: Halaman *landing* publik yang menjelaskan mekanika gamifikasi PaceFire beserta cuplikan Top 5 *Leaderboard* Global.
 
@@ -90,12 +90,12 @@ Dokumen ini merupakan panduan langkah demi langkah (*step-by-step*) untuk memban
 **Target:** Admin memiliki kendali penuh untuk menjaga integritas data dan memoderasi kecurangan.
 
 ### Checklist Pengerjaan:
-- [ ] **5.1 Dashboard Admin (`admin/index.php`):**
+- [x] **5.1 Dashboard Admin (`admin/index.php`):**
   - Menampilkan kartu statistik: Total Pengguna, Total Aktivitas Hari Ini, Jumlah Jalur Aktif, dan Jumlah *Challenge* Aktif.
-- [ ] **5.2 Moderasi Aktivitas (`admin/activities.php`):**
+- [x] **5.2 Moderasi Aktivitas (`admin/activities.php`):**
   - Daftar seluruh aktivitas terbaru dari semua pengguna dengan penanda visual untuk aktivitas dengan *pace*/kecepatan mendekati batas atas.
   - Fitur **Hapus Aktivitas**: Ketika admin menghapus aktivitas mencurigakan, sistem menjalankan transaksi untuk menghapus baris aktivitas, mengurangi/menghitung ulang `total_poin` user, dan merekalkulasi ulang status `streak` user dari riwayat aktivitas valid yang tersisa.
-- [ ] **5.3 Moderasi Challenge (`admin/challenges.php`):**
+- [x] **5.3 Moderasi Challenge (`admin/challenges.php`):**
   - Daftar seluruh *challenge* dan tombol untuk mengubah status menjadi `dibatalkan` jika ditemukan pelanggaran aturan.
 
 **Kriteria Selesai:** Penghapusan aktivitas oleh admin secara akurat memperbarui ulang total poin dan status *streak* pengguna yang bersangkutan tanpa merusak konsistensi database.
@@ -106,14 +106,14 @@ Dokumen ini merupakan panduan langkah demi langkah (*step-by-step*) untuk memban
 **Target:** Seluruh skenario kasus uji lolos dan kode siap dipresentasikan/dikumpulkan.
 
 ### Checklist Pengerjaan:
-- [ ] **6.1 Pengujian Skenario Edge-Case:**
+- [x] **6.1 Pengujian Skenario Edge-Case:**
   - Uji batas poin harian ($500\text{ poin}$/hari) dengan beberapa kali input di hari yang sama.
   - Uji perubahan hari pada *streak* (simulasi dengan mengubah `last_active_date` sementara di database).
   - Uji *soft-delete* jalur yang sudah pernah dipakai di riwayat aktivitas (memastikan halaman riwayat tidak error).
-- [ ] **6.2 Audit Keamanan & Kode:**
+- [x] **6.2 Audit Keamanan & Kode:**
   - Pastikan semua input form dibersihkan saat ditampilkan (`e()`), seluruh query menggunakan PDO *Prepared Statements*, dan token CSRF aktif di setiap form `POST`.
   - Pastikan tidak ada satu pun file CSS/JS pihak ketiga yang tertinggal di folder `assets/`.
-- [ ] **6.3 Dokumentasi Pengumpulan:**
+- [x] **6.3 Dokumentasi Pengumpulan:**
   - Ekspor ulang file `database/schema.sql` terbaru yang sudah berisi data *dummy* untuk keperluan demo.
 
 ---

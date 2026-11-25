@@ -339,3 +339,85 @@ function sync_expired_challenges(PDO $pdo): void
         finalize_challenge($pdo, (int) $challenge['id']);
     }
 }
+
+function recalculate_user_after_activity_delete(PDO $pdo, int $userId): void
+{
+    $datesStatement = $pdo->prepare(
+        'SELECT DISTINCT tanggal
+         FROM activities
+         WHERE user_id = ?
+         ORDER BY tanggal ASC'
+    );
+    $datesStatement->execute([$userId]);
+    $dates = array_map(
+        static fn(array $row): string => $row['tanggal'],
+        $datesStatement->fetchAll()
+    );
+
+    $currentStreak = 0;
+    $longestStreak = 0;
+    $run = 0;
+    $previousDate = null;
+
+    foreach ($dates as $date) {
+        if ($previousDate !== null && strtotime($date) - strtotime($previousDate) === 86400) {
+            $run++;
+        } else {
+            $run = 1;
+        }
+        $longestStreak = max($longestStreak, $run);
+        $previousDate = $date;
+    }
+
+    $today = date('Y-m-d');
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $lastActiveDate = $dates ? $dates[count($dates) - 1] : null;
+
+    if ($lastActiveDate === $today || $lastActiveDate === $yesterday) {
+        $currentStreak = 1;
+        for ($index = count($dates) - 2; $index >= 0; $index--) {
+            if (strtotime($dates[$index + 1]) - strtotime($dates[$index]) === 86400) {
+                $currentStreak++;
+            } else {
+                break;
+            }
+        }
+    } else {
+        $currentStreak = 0;
+    }
+
+    $activityPoints = (int) $pdo->query(
+        'SELECT COALESCE(SUM(poin_total), 0)
+         FROM activities
+         WHERE user_id = ' . (int) $userId
+    )->fetchColumn();
+
+    $badgePoints = (int) $pdo->query(
+        'SELECT COALESCE(SUM(b.bonus_poin), 0)
+         FROM user_badges ub
+         JOIN badges b ON b.id = ub.badge_id
+         WHERE ub.user_id = ' . (int) $userId
+    )->fetchColumn();
+
+    $challengePoints = (int) $pdo->query(
+        'SELECT COALESCE(SUM(bonus_poin_didapat), 0)
+         FROM challenge_participants
+         WHERE user_id = ' . (int) $userId
+    )->fetchColumn();
+
+    $update = $pdo->prepare(
+        'UPDATE users
+         SET total_poin = ?,
+             current_streak = ?,
+             longest_streak = ?,
+             last_active_date = ?
+         WHERE id = ?'
+    );
+    $update->execute([
+        $activityPoints + $badgePoints + $challengePoints,
+        $currentStreak,
+        $longestStreak,
+        $lastActiveDate,
+        $userId,
+    ]);
+}

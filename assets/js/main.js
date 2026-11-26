@@ -1,8 +1,10 @@
 document.querySelectorAll('.flash').forEach((flash) => {
   window.setTimeout(() => {
-    flash.style.transition = 'opacity 150ms ease';
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    flash.style.transition = reducedMotion ? 'none' : 'opacity 150ms ease';
     flash.style.opacity = '0';
-  }, 4000);
+    window.setTimeout(() => flash.remove(), reducedMotion ? 0 : 160);
+  }, 5000);
 });
 
 document.querySelectorAll('.btn, .bottom-nav a, .challenge-tabs a, .route-card').forEach((item) => {

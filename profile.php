@@ -7,7 +7,7 @@ $errors = [];
 $success = null;
 
 $userStatement = $pdo->prepare(
-    'SELECT nama, username, email, total_poin, current_streak, longest_streak, last_active_date
+    'SELECT nama, username, email, total_poin, current_streak, longest_streak, last_active_date, created_at
      FROM users
      WHERE id = ?'
 );
@@ -22,18 +22,15 @@ if ($user['last_active_date'] !== null) {
     $displayStreak = 0;
 }
 
-$distanceStatement = $pdo->prepare(
-    'SELECT jenis_olahraga, COALESCE(SUM(jarak_km), 0) AS total_jarak
+$activitySummaryStatement = $pdo->prepare(
+    'SELECT COUNT(*) AS total_aktivitas,
+            COALESCE(SUM(jarak_km), 0) AS total_jarak,
+            COALESCE(SUM(durasi_menit), 0) AS total_durasi
      FROM activities
-     WHERE user_id = ?
-     GROUP BY jenis_olahraga'
+     WHERE user_id = ?'
 );
-$distanceStatement->execute([$_SESSION['user_id']]);
-$distanceRows = $distanceStatement->fetchAll();
-$distance = ['lari' => 0.0, 'sepeda' => 0.0];
-foreach ($distanceRows as $row) {
-    $distance[$row['jenis_olahraga']] = (float) $row['total_jarak'];
-}
+$activitySummaryStatement->execute([$_SESSION['user_id']]);
+$activitySummary = $activitySummaryStatement->fetch();
 
 $badgeStatement = $pdo->prepare(
     'SELECT b.*, ub.achieved_at
@@ -44,6 +41,9 @@ $badgeStatement = $pdo->prepare(
 );
 $badgeStatement->execute([$_SESSION['user_id']]);
 $badges = $badgeStatement->fetchAll();
+$unlockedBadgeCount = count(array_filter($badges, static function ($badge) {
+    return $badge['achieved_at'] !== null;
+}));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) {
@@ -75,10 +75,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Profil - PaceFire';
 require __DIR__ . '/includes/header.php';
 ?>
-<section class="page-heading">
-    <p class="eyebrow">Profil Atlet</p>
-    <h1><?= e($user['nama']) ?></h1>
-    <p><?= e($user['email']) ?></p>
+<section class="profile-hero">
+    <span class="profile-avatar-large" aria-hidden="true"><?= e(mb_strtoupper(mb_substr($user['nama'], 0, 1, 'UTF-8'), 'UTF-8')) ?></span>
+    <div>
+        <p class="eyebrow">Profil atlet</p>
+        <h1><?= e($user['nama']) ?></h1>
+        <p>Bergabung sejak <?= e(date('Y', strtotime($user['created_at']))) ?></p>
+    </div>
 </section>
 
 <?php foreach ($errors as $error): ?>
@@ -88,36 +91,59 @@ require __DIR__ . '/includes/header.php';
     <div class="flash flash-success"><?= e($success) ?></div>
 <?php endif; ?>
 
-<section class="bento-grid">
-    <article class="stat-card streak-ring-card">
-        <div class="streak-ring" style="--progress: <?= min(100, ((int) $displayStreak / 30) * 100) ?>%">
-            <div class="streak-ring-inner">
-                <strong><?= $displayStreak ?></strong>
-                <span>Hari</span>
-            </div>
+<section class="profile-overview" aria-label="Statistik aktivitas">
+    <article class="stat-card">
+        <span class="profile-stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 17 9 11l4 4 8-9"/><path d="M15 6h6v6"/></svg>
+        </span>
+        <div>
+            <span class="stat-label">Total jarak</span>
+            <strong class="stat-number"><?= number_format((float) $activitySummary['total_jarak'], 1) ?><small> km</small></strong>
         </div>
     </article>
     <article class="stat-card">
-        <span class="stat-label">Total Jarak Lari</span>
-        <strong class="stat-number"><?= number_format($distance['lari'], 2) ?><small> km</small></strong>
+        <span class="profile-stat-icon green" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </span>
+        <div>
+            <span class="stat-label">Total waktu</span>
+            <strong class="stat-number"><?= number_format((float) $activitySummary['total_durasi'] / 60, 1) ?><small> jam</small></strong>
+        </div>
     </article>
     <article class="stat-card">
-        <span class="stat-label">Total Jarak Sepeda</span>
-        <strong class="stat-number"><?= number_format($distance['sepeda'], 2) ?><small> km</small></strong>
-    </article>
-    <article class="stat-card streak-card">
-        <span class="stat-label">Streak Terpanjang</span>
-        <strong class="stat-number"><?= (int) $user['longest_streak'] ?> Hari</strong>
-    </article>
-    <article class="stat-card">
-        <span class="stat-label">Streak Saat Ini</span>
-        <strong class="stat-number"><?= $displayStreak ?> Hari</strong>
+        <span class="profile-stat-icon blue" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 19V9m8 10V4m8 15v-7"/><path d="M2 21h20"/></svg>
+        </span>
+        <div>
+            <span class="stat-label">Aktivitas</span>
+            <strong class="stat-number"><?= (int) $activitySummary['total_aktivitas'] ?></strong>
+        </div>
     </article>
 </section>
 
-<section>
-    <h2 class="section-title">Etalase Badge</h2>
-    <div class="badge-grid">
+<section class="profile-streak">
+    <span class="streak-mascot <?= $displayStreak >= 7 ? 'celebrating' : ($displayStreak > 0 ? 'active' : 'resting') ?>" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+            <path class="flame-body" d="M34 4c3 13-1 17-8 22C18 31 15 38 16 46c1 9 8 15 17 15s17-7 17-18c0-10-6-19-16-29 1 9-2 12-6 15 1-9-2-17-7-25 2 13-8 17-9 29 6-5 12-9 15-15 4-6 7-10 7-14Z"/>
+            <path class="flame-core" d="M34 34c1 5-1 7-4 9-3 2-4 5-3 8 1 4 4 6 8 6s7-3 7-7c0-5-3-9-8-14Z"/>
+            <circle class="flame-eye" cx="30" cy="44" r="1.5"/>
+            <circle class="flame-eye" cx="38" cy="44" r="1.5"/>
+            <path class="flame-smile" d="M31 49c2 2 4 2 6 0"/>
+        </svg>
+    </span>
+    <div>
+        <span class="stat-label">Run streak</span>
+        <strong><?= $displayStreak ?> hari <span>· Terpanjang <?= (int) $user['longest_streak'] ?> hari</span></strong>
+        <p><?= $displayStreak > 0 ? 'Keren, pertahankan ritmemu hari ini.' : 'Streak kembali ke 0. Mulai lagi hari ini.' ?></p>
+    </div>
+</section>
+
+<section class="profile-badges-section">
+    <div class="profile-badges-heading">
+        <h2 class="section-title">Badge</h2>
+        <p><?= $unlockedBadgeCount ?> dari <?= count($badges) ?> terbuka</p>
+    </div>
+    <div class="badge-grid profile-badge-grid">
         <?php foreach ($badges as $badge): ?>
             <?php $unlocked = $badge['achieved_at'] !== null; ?>
             <article class="badge-item <?= $unlocked ? 'unlocked' : 'locked' ?>">
@@ -133,23 +159,9 @@ require __DIR__ . '/includes/header.php';
                 <?php endif; ?>
             </article>
         <?php endforeach; ?>
+        <?php if (!$badges): ?>
+            <div class="panel-card empty-state">Badge akan tampil setelah kamu mulai beraktivitas.</div>
+        <?php endif; ?>
     </div>
-</section>
-
-<section class="panel-card password-card">
-    <h2>Ganti Password</h2>
-    <form method="post" class="stack-form">
-        <?= csrf_field() ?>
-        <label>Password Lama
-            <input type="password" name="password_lama" required autocomplete="current-password">
-        </label>
-        <label>Password Baru
-            <input type="password" name="password_baru" minlength="8" required autocomplete="new-password">
-        </label>
-        <label>Konfirmasi Password Baru
-            <input type="password" name="konfirmasi_password" minlength="8" required autocomplete="new-password">
-        </label>
-        <button class="btn btn-volt" type="submit">Simpan Password</button>
-    </form>
 </section>
 <?php require __DIR__ . '/includes/footer.php'; ?>

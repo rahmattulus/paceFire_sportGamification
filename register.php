@@ -62,6 +62,13 @@ $authPage = true;
 require __DIR__ . '/includes/header.php';
 ?>
 <section class="auth-layout">
+    <aside class="auth-promo">
+        <span class="auth-promo-art" aria-hidden="true">
+            <svg viewBox="0 0 120 90"><path d="M25 67c-17-12-10-37 11-43 16-5 24 6 35 4 17-3 32 6 32 21 0 20-20 30-42 28-14-1-26-2-36-10Z" fill="currentColor" opacity=".22"/><path d="M55 64c-10-8-7-21 2-29 1 11 12 12 11 21 5-4 7-10 5-16 13 10 15 24 5 31-7 6-17 5-23-1Z" fill="currentColor"/><circle cx="60" cy="58" r="2" fill="#fff"/><circle cx="70" cy="58" r="2" fill="#fff"/></svg>
+        </span>
+        <h2>Mulai dari satu langkah.</h2>
+        <p>Buat akun, catat aktivitas, lalu bangun kebiasaan bergerak dengan cara yang terasa ringan.</p>
+    </aside>
     <div class="auth-card">
         <p class="eyebrow">Mulai bergerak</p>
         <h1>Buat Akun</h1>

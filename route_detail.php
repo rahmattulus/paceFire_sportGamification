@@ -38,19 +38,24 @@ $leaderStatement = $pdo->prepare(
 );
 $leaderStatement->execute([$routeId]);
 $leaders = $leaderStatement->fetchAll();
+$routeCategory = $route['jenis_olahraga'] === 'lari' ? 'run' : 'bike';
 
 $pageTitle = e($route['nama_jalur']) . ' - PaceFire';
 require __DIR__ . '/includes/header.php';
 ?>
 <section class="page-heading">
-    <p class="eyebrow"><?= e(ucfirst($route['jenis_olahraga'])) ?> - <?= e(ucfirst($route['tingkat_kesulitan'])) ?></p>
+    <p class="eyebrow"><?= e(ucfirst($route['jenis_olahraga'])) ?> · <?= e(ucfirst($route['tingkat_kesulitan'])) ?></p>
     <h1><?= e($route['nama_jalur']) ?></h1>
 </section>
 
 <section class="route-detail-grid">
-    <article class="panel-card route-visual">
+    <article class="panel-card route-visual route-visual-<?= $routeCategory ?>">
+        <div class="route-detail-intro">
+            <?php if ($route['lokasi']): ?><span><?= e($route['lokasi']) ?></span><?php endif; ?>
+            <span><?= number_format((float) $route['jarak_km'], 2) ?> km · <?= e(ucfirst($route['tingkat_kesulitan'])) ?></span>
+        </div>
         <div class="route-schematic" aria-label="Ilustrasi rute">
-            <svg viewBox="0 0 600 260" role="img">
+            <svg viewBox="0 0 600 260" role="img" aria-label="Ilustrasi jalur <?= e($route['nama_jalur']) ?>">
                 <path d="M40 220 C120 40, 220 220, 300 120 S480 40, 560 180" fill="none" stroke="#FF6B35" stroke-width="10" stroke-linecap="round"/>
                 <circle cx="40" cy="220" r="12" fill="#7E9F4B"/>
                 <circle cx="560" cy="180" r="12" fill="#F4877E"/>
@@ -77,14 +82,14 @@ require __DIR__ . '/includes/header.php';
     </article>
 
     <aside class="panel-card route-action">
-        <span class="stat-label">Jarak Resmi</span>
+        <span class="stat-label">Jarak resmi</span>
         <strong class="stat-number"><?= number_format((float) $route['jarak_km'], 2) ?> km</strong>
         <?php if ($route['lokasi']): ?><p><strong>Lokasi:</strong> <?= e($route['lokasi']) ?></p><?php endif; ?>
         <?php if ($route['deskripsi']): ?><p><?= e($route['deskripsi']) ?></p><?php endif; ?>
-        <p><strong>Personal Best:</strong>
+        <p><strong>Rekor pribadi:</strong>
             <?= $pb !== null ? number_format((float) $pb, 2) . ' menit' : 'Belum ada' ?>
         </p>
-        <a class="btn btn-volt" href="/pacefire/activity_create.php?route_id=<?= (int) $route['id'] ?>">Catat Aktivitas di Jalur Ini</a>
+        <a class="btn btn-volt" href="/pacefire/activity_create.php?route_id=<?= (int) $route['id'] ?>">Catat aktivitas di jalur ini</a>
     </aside>
 </section>
 <?php require __DIR__ . '/includes/footer.php'; ?>

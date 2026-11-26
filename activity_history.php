@@ -39,63 +39,78 @@ require __DIR__ . '/includes/header.php';
 <section class="page-heading">
     <p class="eyebrow">Riwayat Pribadi</p>
     <h1>Aktivitasku</h1>
+    <p>Lihat kembali setiap langkah dan jarak yang sudah kamu tempuh.</p>
 </section>
 
-<form method="get" class="filter-bar">
-    <label>Jenis
-        <select name="jenis">
+<form method="get" class="filter-bar history-filter">
+    <label for="activity-type">Jenis olahraga
+        <select id="activity-type" name="jenis">
             <option value="">Semua</option>
             <option value="lari" <?= $jenis === 'lari' ? 'selected' : '' ?>>Lari</option>
             <option value="sepeda" <?= $jenis === 'sepeda' ? 'selected' : '' ?>>Sepeda</option>
         </select>
     </label>
-    <label>Dari
-        <input type="date" name="tanggal_mulai" value="<?= e($tanggalMulai) ?>">
+    <label for="activity-from">Dari tanggal
+        <input id="activity-from" type="date" name="tanggal_mulai" value="<?= e($tanggalMulai) ?>">
     </label>
-    <label>Sampai
-        <input type="date" name="tanggal_selesai" value="<?= e($tanggalSelesai) ?>">
+    <label for="activity-to">Sampai tanggal
+        <input id="activity-to" type="date" name="tanggal_selesai" value="<?= e($tanggalSelesai) ?>">
     </label>
-    <button class="btn btn-secondary" type="submit">Filter</button>
+    <button class="btn btn-volt" type="submit">Terapkan filter</button>
 </form>
 
-<section class="panel-card table-panel">
-    <div class="table-scroll">
-        <table>
-            <thead>
-            <tr>
-                <th>Tanggal</th>
-                <th>Jenis</th>
-                <th>Jalur</th>
-                <th>Jarak</th>
-                <th>Durasi</th>
-                <th>Pace / Speed</th>
-                <th>Poin</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($activities as $activity): ?>
-                <?php
-                $jarak = (float) $activity['jarak_km'];
-                $durasi = (float) $activity['durasi_menit'];
-                $metric = $activity['jenis_olahraga'] === 'lari'
-                    ? format_pace($jarak, $durasi) . ' /km'
-                    : number_format($jarak / ($durasi / 60), 1) . ' km/jam';
-                ?>
-                <tr>
-                    <td><?= e(date('d M Y', strtotime($activity['tanggal']))) ?></td>
-                    <td><?= e(ucfirst($activity['jenis_olahraga'])) ?></td>
-                    <td><?= e($activity['nama_jalur'] ?: 'Tanpa jalur') ?></td>
-                    <td><?= number_format($jarak, 2) ?> km</td>
-                    <td><?= number_format($durasi, 2) ?> menit</td>
-                    <td class="pace-value"><?= e($metric) ?></td>
-                    <td class="points-badge"><?= (int) $activity['poin_total'] ?></td>
-                </tr>
-            <?php endforeach; ?>
-            <?php if (!$activities): ?>
-                <tr><td colspan="7" class="empty-state">Belum ada aktivitas.</td></tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
+<?php if (!$activities): ?>
+    <section class="panel-card empty-state history-empty-state">
+        <span class="empty-state-icon" aria-hidden="true">↗</span>
+        <strong>Belum ada aktivitas</strong>
+        <span>Catat lari atau gowes pertamamu, lalu progresnya akan tampil di sini.</span>
+        <a class="btn btn-volt" href="/pacefire/activity_create.php">Catat aktivitas</a>
+    </section>
+<?php else: ?>
+    <?php
+    $monthNames = [
+        1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
+    $activitiesByMonth = [];
+    foreach ($activities as $activity) {
+        $month = $monthNames[(int) date('n', strtotime($activity['tanggal']))] . ' ' . date('Y', strtotime($activity['tanggal']));
+        $activitiesByMonth[$month][] = $activity;
+    }
+    ?>
+    <div class="history-groups">
+        <?php foreach ($activitiesByMonth as $monthLabel => $monthActivities): ?>
+            <section class="history-month">
+                <h2><?= e($monthLabel) ?></h2>
+                <div class="history-list">
+                <?php foreach ($monthActivities as $activity): ?>
+                    <?php
+            $jarak = (float) $activity['jarak_km'];
+            $durasi = (float) $activity['durasi_menit'];
+            $metric = $activity['jenis_olahraga'] === 'lari'
+                ? format_pace($jarak, $durasi) . ' /km'
+                : number_format($jarak / ($durasi / 60), 1) . ' km/jam';
+            $isRun = $activity['jenis_olahraga'] === 'lari';
+            $activityName = $isRun ? 'Lari' : 'Sepeda';
+            ?>
+                    <article class="history-row">
+                        <span class="history-icon <?= $isRun ? 'run' : 'bike' ?>" aria-hidden="true">
+                            <?php if ($isRun): ?>
+                                <svg viewBox="0 0 24 24"><circle cx="15" cy="5" r="2"/><path d="m12 8 3 2 3 1M9 10l3-2-2 5-4 3m6-3 3 3 2 4m-9-4-3 4"/></svg>
+                            <?php else: ?>
+                                <svg viewBox="0 0 24 24"><circle cx="6" cy="17" r="4"/><circle cx="18" cy="17" r="4"/><path d="m6 17 4-8h4l4 8M9 13h7m-6-4H8"/></svg>
+                            <?php endif; ?>
+                        </span>
+                        <span class="history-detail">
+                            <strong><?= e($activityName) ?><?= $activity['nama_jalur'] ? ' · ' . e($activity['nama_jalur']) : '' ?></strong>
+                            <small><?= e(date('d', strtotime($activity['tanggal']))) ?> <?= e($monthNames[(int) date('n', strtotime($activity['tanggal']))]) ?> · <?= number_format($jarak, 2) ?> km · <?= number_format($durasi, 0) ?> menit · <?= e($metric) ?></small>
+                        </span>
+                        <span class="history-points">+<?= (int) $activity['poin_total'] ?><small>poin</small></span>
+                    </article>
+                <?php endforeach; ?>
+                </div>
+            </section>
+        <?php endforeach; ?>
     </div>
-</section>
+<?php endif; ?>
 <?php require __DIR__ . '/includes/footer.php'; ?>

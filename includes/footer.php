@@ -2,39 +2,47 @@
 ?>
 </main>
 <footer class="site-footer">
-    <p>PaceFire &copy; <?= date('Y') ?></p>
+    <p>PaceFire &copy; <?= date('Y') ?> <span>Bergerak dengan ritmemu.</span></p>
 </footer>
 <?php if (is_logged_in()): ?>
-<nav class="bottom-nav" aria-label="Navigasi cepat">
-    <?php if ($_SESSION['role'] === 'user'): ?>
-        <a href="/pacefire/dashboard.php" class="<?= basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : '' ?>">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9 20v-6h6v6"/></svg>
-            <span>Today</span>
+</div>
+<?php
+$mobileNavigation = $_SESSION['role'] === 'admin'
+    ? [
+        ['label' => 'Dashboard', 'href' => '/pacefire/admin/index.php', 'icon' => $adminNavigation[0]['icon']],
+        ['label' => 'Jalur', 'href' => '/pacefire/admin/routes.php', 'icon' => $adminNavigation[1]['icon']],
+        ['label' => 'Aktivitas', 'href' => '/pacefire/admin/activities.php', 'icon' => $adminNavigation[3]['icon']],
+        ['label' => 'Challenge', 'href' => '/pacefire/admin/challenges.php', 'icon' => $adminNavigation[2]['icon']],
+        ['label' => 'Keluar', 'href' => '/pacefire/logout.php', 'icon' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>'],
+    ]
+    : [
+        ['label' => 'Hari ini', 'href' => '/pacefire/dashboard.php', 'icon' => $userNavigation[0]['icon']],
+        ['label' => 'Jalur', 'href' => '/pacefire/routes.php', 'icon' => $userNavigation[1]['icon'], 'aliases' => ['route_detail.php']],
+        ['label' => 'Catat', 'href' => '/pacefire/activity_create.php', 'icon' => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>'],
+        ['label' => 'Challenge', 'href' => '/pacefire/challenges.php', 'icon' => $userNavigation[2]['icon'], 'aliases' => ['challenge_detail.php', 'challenge_create.php']],
+        ['label' => 'Profil', 'href' => '/pacefire/profile.php', 'icon' => $userNavigation[4]['icon']],
+    ];
+?>
+<nav class="bottom-nav<?= $_SESSION['role'] === 'admin' ? ' bottom-nav-admin' : '' ?>" aria-label="Navigasi cepat">
+    <?php foreach ($mobileNavigation as $index => $item): ?>
+        <?php
+        $isActive = $activeNavigation($item['href'], $item['aliases'] ?? []);
+        $isPrimary = $_SESSION['role'] === 'user' && $item['label'] === 'Catat';
+        ?>
+        <a
+            class="<?= $isActive ? 'active' : '' ?><?= $isPrimary ? 'bottom-nav-primary' : '' ?>"
+            href="<?= e($item['href']) ?>"
+            aria-current="<?= $isActive ? 'page' : 'false' ?>"
+            title="<?= e($item['label']) ?>"
+        >
+            <?= $item['icon'] ?>
+            <span><?= e($item['label']) ?></span>
         </a>
-        <a href="/pacefire/activity_create.php" class="<?= basename($_SERVER['PHP_SELF']) === 'activity_create.php' ? 'active' : '' ?>">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-            <span>Log</span>
-        </a>
-        <a href="/pacefire/routes.php" class="<?= basename($_SERVER['PHP_SELF']) === 'routes.php' || basename($_SERVER['PHP_SELF']) === 'route_detail.php' ? 'active' : '' ?>">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 20c2-5 4-3 6-8s4-5 8-8"/><circle cx="5" cy="20" r="2"/><circle cx="19" cy="4" r="2"/></svg>
-            <span>Routes</span>
-        </a>
-        <a href="/pacefire/challenges.php" class="<?= basename($_SERVER['PHP_SELF']) === 'challenges.php' || basename($_SERVER['PHP_SELF']) === 'challenge_detail.php' ? 'active' : '' ?>">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v1a4 4 0 0 0 4 4M17 6h3v1a4 4 0 0 1-4 4"/></svg>
-            <span>Challenges</span>
-        </a>
-        <a class="profile-nav <?= basename($_SERVER['PHP_SELF']) === 'profile.php' ? 'active' : '' ?>" href="/pacefire/profile.php">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg>
-            <span>Profile</span>
-        </a>
-    <?php else: ?>
-        <a href="/pacefire/admin/index.php"><span>Today</span></a>
-        <a href="/pacefire/admin/routes.php"><span>Routes</span></a>
-        <a href="/pacefire/admin/activities.php"><span>Log</span></a>
-        <a href="/pacefire/admin/challenges.php"><span>Challenges</span></a>
-        <a href="/pacefire/logout.php"><span>Logout</span></a>
-    <?php endif; ?>
+    <?php endforeach; ?>
 </nav>
+<?php endif; ?>
+<?php if (is_logged_in()): ?>
+</div>
 <?php endif; ?>
 <script src="/pacefire/assets/js/main.js"></script>
 </body>

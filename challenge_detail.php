@@ -77,43 +77,48 @@ $personalScore = $joined
 $progress = $challenge['nilai_target'] > 0
     ? min(100, round(($personalScore / (float) $challenge['nilai_target']) * 100))
     : 0;
+$targetUnit = $challenge['tipe_target'] === 'jarak' ? 'km' : 'poin';
 
 $pageTitle = e($challenge['judul']) . ' - PaceFire';
 require __DIR__ . '/includes/header.php';
 ?>
 <section class="page-heading">
-    <p class="eyebrow"><?= e(ucfirst($challenge['tingkat_kesulitan'])) ?> Challenge</p>
+    <p class="eyebrow">Challenge komunitas</p>
     <h1><?= e($challenge['judul']) ?></h1>
 </section>
 
-<section class="route-detail-grid">
-    <article class="panel-card">
+<section class="route-detail-grid challenge-detail-grid">
+    <article class="panel-card challenge-detail-main">
+        <span class="challenge-detail-tag"><?= e(ucfirst($challenge['jenis_olahraga'])) ?> · <?= e(ucfirst($challenge['tingkat_kesulitan'])) ?></span>
+        <h2>Info challenge</h2>
         <?php if ($challenge['deskripsi']): ?>
             <p><?= e($challenge['deskripsi']) ?></p>
         <?php endif; ?>
         <dl class="challenge-meta">
             <dt>Pembuat</dt><dd><?= e($challenge['nama_pembuat']) ?></dd>
             <dt>Jenis</dt><dd><?= e(ucfirst($challenge['jenis_olahraga'])) ?></dd>
-            <dt>Target</dt><dd><?= number_format((float) $challenge['nilai_target'], 2) ?> <?= e($challenge['tipe_target']) ?></dd>
+            <dt>Target</dt><dd><?= number_format((float) $challenge['nilai_target'], 2) ?> <?= e($targetUnit) ?></dd>
             <dt>Periode</dt><dd><?= e($challenge['tanggal_mulai']) ?> s/d <?= e($challenge['tanggal_selesai']) ?></dd>
             <dt>Status</dt><dd><?= e(ucfirst($challenge['status'])) ?></dd>
         </dl>
 
         <?php if ($joined): ?>
-            <h2>Progres Anda</h2>
-            <div class="progress-track"><span style="width: <?= $progress ?>%"></span></div>
-            <p><?= number_format($personalScore, 2) ?> / <?= number_format((float) $challenge['nilai_target'], 2) ?></p>
+            <div class="challenge-personal-progress">
+                <div class="panel-heading-row"><h2>Progresmu</h2><strong><?= $progress ?>%</strong></div>
+                <div class="progress-track" role="progressbar" aria-label="Progres challenge" aria-valuenow="<?= $progress ?>" aria-valuemin="0" aria-valuemax="100"><span style="width: <?= $progress ?>%"></span></div>
+                <p><?= number_format($personalScore, 2) ?> / <?= number_format((float) $challenge['nilai_target'], 2) ?> <?= e($targetUnit) ?></p>
+            </div>
         <?php elseif ($challenge['status'] === 'aktif'): ?>
             <form method="post">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="join">
-                <button class="btn btn-volt" type="submit">Gabung Challenge</button>
+                <button class="btn btn-volt" type="submit">Gabung challenge</button>
             </form>
         <?php endif; ?>
     </article>
 
-    <aside class="panel-card">
-        <h2>Leaderboard Peserta</h2>
+    <aside class="panel-card challenge-leaderboard">
+        <h2>Peserta challenge</h2>
         <div class="table-scroll">
             <table>
                 <thead><tr><th>Peringkat</th><th>Peserta</th><th>Skor</th></tr></thead>
